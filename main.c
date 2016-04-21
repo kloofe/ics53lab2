@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 //#include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -7,23 +8,29 @@
 int main()
 {
 	char fullCommand[80];
-	char command[80];
-	char* arg = malloc(sizeof(char)*250);
+	char* command = malloc(sizeof(char)*250);
+	char** args = malloc(sizeof(char)*250);
 	int option=0;
 	int child_status;
 	pid_t pid;
 	do {
 		printf("prompt> ");
 		fgets(command, sizeof command, stdin);
-		strcpy(arg, command);
-		
-
+		int index = 0;
+		tok  = strtok(command, " ");
+		args[index] = tok;
+		while((tok = strtok(NULL, " ")) != NULL) {
+			index++;
+			args[index] = tok;
+		}
 		if (strcmp(command, "quit") == 0){
 			option = 1;
 		}
 		else{
 			option = 2;
 		}
+
+		
 
 		switch(option){
 			case 1:
@@ -32,7 +39,7 @@ int main()
 				pid = fork();
 				if (pid == 0){
 					printf("child\n");
-					if(execvp(command, args) < 0) {
+					if(execvp(args[0], args) < 0) {
 						printf("failed\n");
 					}
 					//exit(0);
