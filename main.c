@@ -5,22 +5,24 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/wait.h>
+int parseline(char* com, char** arg);
 
 int main()
 {
-	char fullCommand[80];
-	char *tok;
+	
 	int option=0;
-	int child_status;
-	bool bg;
-	pid_t pid;
 	do {
-		char command[80];
+		char *args[1024];
+		int child_status;
+		int bg;
+		pid_t pid;
+
+		char command[1024];
 
 		printf("prompt> ");
 		fgets(command, sizeof command, stdin);
-
 		if (strcmp(command, "quit\n") == 0){
+			exit(0);
 			option = 1;
 		}
 		else{
@@ -28,62 +30,54 @@ int main()
 		}
 
 
-		switch(option){
-			case 1:
-				break;
-			case 2:
-				printf("");
-				int index;
-				char** args = malloc(sizeof(char)*250);
-				index = 0;
-				tok  = strtok(command, "  \n");
-				args[index] = tok;
-				while((tok = strtok(NULL, "  \n")) != NULL) {
-					index++;
-					args[index] = tok;
-					printf("%s\n", args[index]);
-				}
-				printf("%s\n", args[index]);
-				if(strcmp(args[index], "&") == 0) {
-					printf("cry\n");
-					bg = true;
-					args[index] = NULL;
-				}
-				else {
-					bg = false;
-				}
+					
+				bg = parseline(command, args);
 
 				pid = fork();
 				if (pid == 0){
-						
 					if(execvp(args[0], args) < 0) {
-							printf("failed to start exc\n");
+						printf("failed to open\n");
 					}
 					
-					
+				}
+				//	exit(0);
+				else if (pid == -1) {
+					printf("failed to fork\n");
+				}
+
+				if(!bg) {
+					if(waitpid(pid, &child_status, 0) < 0) {
+						printf("error\n");
+					}
+				}
+				else {
+					waitpid(pid, &child_status, WNOHANG); 
+					printf("skipped\n");
+				}
 				
-					free(args);	
-					//exit(0);
-				}
-				else if(pid == -1) {
-					printf("failed\n");
-				}
-				else{
-					if(!bg) {
-					waitpid(pid, &child_status, 0);
-					}
-					else {
-						waitpid(pid, &child_status, WNOHANG);
-					}
-					if(WIFEXITED(child_status)) {
-						printf("Child terminated\n");
-					}
-				}
-				break;
-			
-		}
 	}
 	while(option != 1);
 
 	return 0;
+}
+
+int parseline(char* com, char** arg){
+	int bg = 0;
+	int index = 0;
+	char* tok;
+        tok  = strtok(com, "  \n");
+        arg[index] = tok;
+        while((tok = strtok(NULL, "  \n")) != NULL) {
+		index++;
+		arg[index] = tok;
+		printf("%s\n", arg[index]);
+	}
+	if(strcmp(arg[index], "&") == 0) {
+		bg = 1;
+		arg[index] = NULL;
+	}
+	else {
+		bg = 0;
+	}
+	return bg; 
 }
