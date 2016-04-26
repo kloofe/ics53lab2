@@ -19,7 +19,7 @@ int main()
 
 		printf("prompt> ");
 		fgets(command, sizeof command, stdin);
-		
+
 		if (strcmp(command, "quit\n") == 0){
 			option = 1;
 		}
@@ -32,35 +32,36 @@ int main()
 			case 1:
 				break;
 			case 2:
+				printf("");
+				int index;
+				char** args = malloc(sizeof(char)*250);
+				index = 0;
+				tok  = strtok(command, "  \n");
+				args[index] = tok;
+				while((tok = strtok(NULL, "  \n")) != NULL) {
+					index++;
+					args[index] = tok;
+					printf("%s\n", args[index]);
+				}
+				printf("%s\n", args[index]);
+				if(strcmp(args[index], "&") == 0) {
+					printf("cry\n");
+					bg = true;
+					args[index] = NULL;
+				}
+				else {
+					bg = false;
+				}
+
 				pid = fork();
 				if (pid == 0){
-					char** args = malloc(sizeof(char)*250);
-					int index = 0;
-					tok  = strtok(command, "  \n");
-					args[index] = tok;
-					while((tok = strtok(NULL, "  \n")) != NULL) {
-						index++;
-						args[index] = tok;
-						printf("%s\n", args[index]);
+						
+					if(execvp(args[0], args) < 0) {
+							printf("failed to start exc\n");
 					}
-					if(strcmp(args[index], "&") == 0) {
-						bg = true;
-						args[index] = NULL;
-					}
-					else {
-						bg = false;
-					}
-					if(!bg) {
-						if(execvp(args[0], args) < 0) {
-							printf("failed\n");
-						}
-					}
-					else {
-						if(execvp(args[0], args) < 0) {
-							printf("failed\n");
-						}
-						setpgrp(pid, pid);
-					}
+					
+					
+				
 					free(args);	
 					//exit(0);
 				}
@@ -68,7 +69,12 @@ int main()
 					printf("failed\n");
 				}
 				else{
+					if(!bg) {
 					waitpid(pid, &child_status, 0);
+					}
+					else {
+						waitpid(pid, &child_status, WNOHANG);
+					}
 					if(WIFEXITED(child_status)) {
 						printf("Child terminated\n");
 					}
