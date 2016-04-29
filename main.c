@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <stdbool.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -24,41 +23,32 @@ void eval() {
 	if(strcmp(command, "\n") == 0) {
 		return;
 	}
-
-				
-			bg = parseline(command, args);
-			
-
-			pid = fork();
-			if (pid == 0){
-				if(execvp(args[0], args) < 0) {
-					char temp[80];
-					strcpy(temp, args[0]);
-					char str[80];
-					strcpy(str, "./");
-					strcat(str, args[0]);
-					args[0] = str;
-					if(execvp(args[0], args) < 0) {
-						printf("%s: Command not found.\n", temp);
-						exit(0);
-					}
-				}
-				
+	bg = parseline(command, args);
+	pid = fork();
+	if (pid == 0){
+		if(execvp(args[0], args) < 0) {
+			char temp[80];
+			strcpy(temp, args[0]);
+			char str[80];
+			strcpy(str, "./");
+			strcat(str, args[0]);
+			args[0] = str;
+			if(execvp(args[0], args) < 0) {
+				printf("%s: Command not found.\n", temp);
+				exit(0);
 			}
-			//	exit(0);
-			else if (pid == -1) {
-				printf("failed to fork\n");
-			}
-
-			if(!bg) {
-				waitpid(pid, &child_status, 0);
-				
-			}
+		}
+	}
+	else if (pid == -1) {
+		printf("failed to fork\n");
+	}
+	if(!bg) {
+		waitpid(pid, &child_status, 0);
+	}
 }
 
 int main()
 {
-	
 	int option=0;
 	signal(SIGCHLD, SIG_IGN);
 	do {
@@ -78,7 +68,6 @@ int parseline(char* com, char** arg){
         while((tok = strtok(NULL, "  \n")) != NULL) {
 		index++;
 		arg[index] = tok;
-		printf("%s\n", arg[index]);
 	}
 	if(strcmp(arg[index], "&") == 0) {
 		bg = 1;
