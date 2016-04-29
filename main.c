@@ -1,6 +1,9 @@
+//Cheng, Gordon: 75368389
+//Nina Volkmuth: 19518656
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -52,7 +55,7 @@ int main()
 	int option=0;
 	signal(SIGCHLD, SIG_IGN);
 	do {
-		eval();	
+		eval();
 	}
 	while(option != 1);
 
@@ -63,9 +66,9 @@ int parseline(char* com, char** arg){
 	int bg = 0;
 	int index = 0;
 	char* tok;
-        tok  = strtok(com, "  \n");
+        tok  = strtok(com, "\t  \n");
         arg[index] = tok;
-        while((tok = strtok(NULL, "  \n")) != NULL) {
+        while((tok = strtok(NULL, "\t  \n")) != NULL) {
 		index++;
 		arg[index] = tok;
 	}
@@ -77,5 +80,5 @@ int parseline(char* com, char** arg){
 		arg[index+1] = NULL;
 		bg = 0;
 	}
-	return bg; 
+	return bg;
 }
